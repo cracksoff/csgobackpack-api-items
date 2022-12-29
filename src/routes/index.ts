@@ -27,7 +27,7 @@ server.get(
 	'/getItemDataByName',
 	async (request: IGetItemDataByName, reply: FastifyReply) => {
 		try {
-			const name = request.query.name as string
+			const name = request.query.name
 
 			const result = await getItemDataByName(name)
 			if (!result) await reply.send({ success: false, message: 'Not found' })

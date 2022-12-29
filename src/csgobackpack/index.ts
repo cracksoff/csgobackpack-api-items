@@ -1,8 +1,6 @@
 import type { Request, Item, Data } from '#app/csgobackpack/parser.types'
-import { got } from '#app/utils/index.js'
-import { sleep } from '#app/utils/index.js'
+import { got, db, sleep } from '#app/utils/index.js'
 import * as queries from '#app/components/index.queries.js'
-import { db } from '#app/utils/index.js'
 import logger from '#app/utils/log.js'
 
 enum NameColors {
@@ -16,21 +14,25 @@ export const startParser = async (): Promise<void> => {
 	while (true) {
 		const data = await parser()
 		const dataArray = Array.from(data)
+		const promises = []
 
 		for (const item of dataArray) {
-			await queries.updateItemData.run(
-				{
-					item_name: item.item_name,
-					icon_url: item.icon_url,
-					icon_url_large: item.icon_url_large,
-					item_type: item.item_type,
-					rarity: item.rarity,
-					rarity_color: item.rarity_color,
-					name_color: item.name_color,
-				},
-				db,
+			promises.push(
+				queries.updateItemData.run(
+					{
+						item_name: item.item_name,
+						icon_url: item.icon_url,
+						icon_url_large: item.icon_url_large,
+						item_type: item.item_type,
+						rarity: item.rarity,
+						rarity_color: item.rarity_color,
+						name_color: item.name_color,
+					},
+					db,
+				),
 			)
 		}
+		await Promise.all(promises)
 
 		logger.info('Parser finished')
 
